@@ -1,7 +1,6 @@
 package filius.gui.anwendungssicht;
 
 import filius.software.clientserver.NotepadPlusPlus;
-// import filius.software.clientserver.NoWrapJTextPane;
 
 import javax.swing.*;
 import javax.swing.text.*;
@@ -19,12 +18,21 @@ import filius.software.system.*;
 
 public class GUIApplicationNotepadPlusPlusWindow extends GUIApplicationWindow {
     private JTextPane textPane;
+    private JScrollPane scrollPane;
+    private JPanel noWrapPanel;
     private JTextField fileNameField;
+
+    JMenuItem noneOption;
+    JMenuItem javaOption;
+    JMenuItem htmlOption;
+    JMenuItem cssOption;
+
     private JButton openButton;
     private JButton saveButton;
     private JFileChooser fileChooser;
     private JPanel panel;
     private boolean isSyntaxHighlightingEnabled = false;
+    private boolean isWordWrapEnabled = false;
 
     private final SimpleAttributeSet keywordStyle = new SimpleAttributeSet();
     private final SimpleAttributeSet dataTypeStyle = new SimpleAttributeSet();
@@ -86,6 +94,10 @@ public class GUIApplicationNotepadPlusPlusWindow extends GUIApplicationWindow {
         };
 
         textPane = new JTextPane(doc);
+
+        //default no word wrap
+        JPanel noWrapPanel = new JPanel( new BorderLayout() );
+        noWrapPanel.add( textPane );
         
 
         
@@ -97,7 +109,7 @@ public class GUIApplicationNotepadPlusPlusWindow extends GUIApplicationWindow {
         lineNumbersArea.setFont(textPane.getFont());
 
 
-        JScrollPane scrollPane = new JScrollPane(textPane);
+        scrollPane = new JScrollPane(noWrapPanel);
         scrollPane.setPreferredSize(new Dimension(355, 335));
 
         // Scroll Pane for the Line Numbers
@@ -120,22 +132,24 @@ public class GUIApplicationNotepadPlusPlusWindow extends GUIApplicationWindow {
         JMenuBar menuBar = new JMenuBar();
 
         JMenu optionsMenu = new JMenu("Options");
-        JMenu languageMenu = new JMenu("Language");
-            JMenuItem noneOption = new JMenuItem("None");
-            JMenuItem javaOption = new JMenuItem("Java");
-            JMenuItem htmlOption = new JMenuItem("HTML");
-            JMenuItem cssOption = new JMenuItem("CSS");
+            JMenu languageMenu = new JMenu("Language");
+                noneOption = new JMenuItem("\u2713  None");
+                javaOption = new JMenuItem("   Java");
+                htmlOption = new JMenuItem("   HTML");
+                cssOption = new JMenuItem("   CSS");
+            
+            JMenuItem wordWrapMenu = new JMenuItem("   Word wrap");
 
 
         JMenu fileMenu = new JMenu("File");
-        JMenuItem save = new JMenuItem("Save");
-        JMenuItem savePC = new JMenuItem("Save to PC");
-        JMenuItem open = new JMenuItem("Open");
-        JMenuItem openPC = new JMenuItem("Open from PC");
-        JMenuItem newFile = new JMenuItem("New...");
+            JMenuItem save = new JMenuItem("Save");
+            JMenuItem savePC = new JMenuItem("Save to PC");
+            JMenuItem open = new JMenuItem("Open");
+            JMenuItem openPC = new JMenuItem("Open from PC");
+            JMenuItem newFile = new JMenuItem("New...");
 
         JMenu editMenu = new JMenu("Edit"); // Add Edit menu
-        JMenuItem findReplace = new JMenuItem("Find and Replace"); // Add Find and Replace option
+            JMenuItem findReplace = new JMenuItem("Find and Replace"); // Add Find and Replace option
 
 
         save.addActionListener(this::saveFile);
@@ -153,11 +167,14 @@ public class GUIApplicationNotepadPlusPlusWindow extends GUIApplicationWindow {
         });
 
         findReplace.addActionListener(e -> showFindAndReplaceDialog());
+        
 
         noneOption.addActionListener(e -> switchLanguage("None"));
         javaOption.addActionListener(e -> switchLanguage("Java"));
         htmlOption.addActionListener(e -> switchLanguage("HTML"));
         cssOption.addActionListener(e -> switchLanguage("CSS"));
+
+        wordWrapMenu.addActionListener(e -> toggleWordWrap(wordWrapMenu));
 
         fileMenu.add(save);
         fileMenu.add(savePC);
@@ -172,6 +189,7 @@ public class GUIApplicationNotepadPlusPlusWindow extends GUIApplicationWindow {
         languageMenu.add(htmlOption);
         languageMenu.add(cssOption);
         optionsMenu.add(languageMenu);
+        optionsMenu.add(wordWrapMenu);
 
         menuBar.add(fileMenu);      // Add File menu to the menu bar
         menuBar.add(editMenu);      // Add Edit menu to the menu bar
@@ -198,6 +216,7 @@ public class GUIApplicationNotepadPlusPlusWindow extends GUIApplicationWindow {
     //////////////////////////////////
     private void switchLanguage(String language) {
         currentLanguage = language;
+        updateLanguageMenuSelection(); // update menu entrys
         if ("None".equals(language)) {
             clearHighlighting(); // Deaktiviert Syntax-Hervorhebung
         } else {
@@ -211,7 +230,7 @@ public class GUIApplicationNotepadPlusPlusWindow extends GUIApplicationWindow {
             return;
         }
 
-        String text = textPane.getText();
+        String text = textPane.getText().replace("\r\n", "\n");;
         StyledDocument doc = textPane.getStyledDocument();
         doc.setCharacterAttributes(0, text.length(), normalStyle, true);
 
@@ -288,13 +307,50 @@ public class GUIApplicationNotepadPlusPlusWindow extends GUIApplicationWindow {
         doc.setCharacterAttributes(0, doc.getLength(), normalStyle, true);
     }
 
-    // private void updateHighlightingMenuItem(JMenuItem toggleHighlighting) {
-    //     if (isSyntaxHighlightingEnabled) {
-    //         toggleHighlighting.setText("\u2713  Syntax Highlighting");
-    //     } else {
-    //         toggleHighlighting.setText("   Syntax Highlighting");
-    //     }
-    // }
+    private void updateLanguageMenuSelection() {
+        noneOption.setText("   None");
+        javaOption.setText("   Java");
+        htmlOption.setText("   HTML");
+        cssOption.setText("   CSS");
+    
+        switch (currentLanguage) {
+            case "None":
+                noneOption.setText("\u2713  None"); // Unicode-tick
+                break;
+            case "Java":
+                javaOption.setText("\u2713  Java");
+                break;
+            case "HTML":
+                htmlOption.setText("\u2713  HTML");
+                break;
+            case "CSS":
+                cssOption.setText("\u2713  CSS");
+                break;
+        }
+    }
+    
+
+    private void toggleWordWrap(JMenuItem item) {
+        isWordWrapEnabled = !isWordWrapEnabled; // Zustand umschalten
+    
+        if (isWordWrapEnabled) {
+            item.setText("\u2713   Word wrap");
+            // TextPane direkt in ScrollPane verwenden (Word Wrap aktiviert)
+            scrollPane.setViewportView(textPane);
+        } else {
+            item.setText("   Word wrap");
+            // Panel ohne Word Wrap verwenden
+            if (noWrapPanel == null) {
+                noWrapPanel = new JPanel(new BorderLayout());
+                noWrapPanel.add(textPane);
+            }
+            scrollPane.setViewportView(noWrapPanel);
+        }
+    
+        // update UI
+        scrollPane.revalidate();
+        scrollPane.repaint();
+    }
 
     private void showFindAndReplaceDialog() {
         JDialog findReplaceDialog = new JDialog((Frame) null, "Find and Replace", true);
@@ -416,9 +472,10 @@ public class GUIApplicationNotepadPlusPlusWindow extends GUIApplicationWindow {
 
                 currentFilePath = file.getAbsolutePath();
                 setTitle("Notepad++: " + file.getName());
-                if (isSyntaxHighlightingEnabled) {
-                    applySyntaxHighlighting();
-                }
+                setLanguageBasedOnExtension(file.getName());
+                // if (isSyntaxHighlightingEnabled) {
+                //     applySyntaxHighlighting();
+                // }
             } catch (java.io.IOException ioException) {
                 JOptionPane.showMessageDialog(this, "Failed to open file", "Error", JOptionPane.ERROR_MESSAGE);
             }
@@ -444,6 +501,7 @@ public class GUIApplicationNotepadPlusPlusWindow extends GUIApplicationWindow {
 
                 currentFilePath = file.getAbsolutePath();
                 setTitle("Notepad++: " + file.getName());
+                setLanguageBasedOnExtension(file.getName());
             } catch (java.io.IOException ioException) {
                 JOptionPane.showMessageDialog(this, "Failed to save file", "Error", JOptionPane.ERROR_MESSAGE);
             }
@@ -451,15 +509,16 @@ public class GUIApplicationNotepadPlusPlusWindow extends GUIApplicationWindow {
     }
 
     private void openFile(ActionEvent e) {
-                Datei aktuelleDatei = null;
+                Datei currentFile = null;
                 DMTNFileChooser fc = new DMTNFileChooser( (Betriebssystem) holeAnwendung().getSystemSoftware() );
                 int rueckgabe = fc.openDialog();
 
                 if (rueckgabe == DMTNFileChooser.OK) {
-                    aktuelleDatei = holeAnwendung().getSystemSoftware().getDateisystem().holeDatei(fc.getAktuellerOrdner(), fc.getAktuellerDateiname());
+                    currentFile = holeAnwendung().getSystemSoftware().getDateisystem().holeDatei(fc.getAktuellerOrdner(), fc.getAktuellerDateiname());
 
-                    setTitle(aktuelleDatei.getName());
-                    textPane.setText(aktuelleDatei.getDateiInhalt());
+                    setTitle(currentFile.getName());
+                    textPane.setText(currentFile.getDateiInhalt());
+                    setLanguageBasedOnExtension(currentFile.getName());
                     if (isSyntaxHighlightingEnabled) {
                         applySyntaxHighlighting();
                     }
@@ -479,9 +538,22 @@ public class GUIApplicationNotepadPlusPlusWindow extends GUIApplicationWindow {
 			currentFile = new Datei(fileName, messages.getString("texteditor_msg8"), textPane.getText());
 			this.holeAnwendung().getSystemSoftware().getDateisystem().speicherDatei(fc.getAktuellerOrdner(), currentFile);
 			setTitle(currentFile.getName());
+            setLanguageBasedOnExtension(currentFile.getName());
 		}
     }
 
+
+    private void setLanguageBasedOnExtension(String fileName) {
+        if (fileName.endsWith(".java")) {
+            switchLanguage("Java");
+        } else if (fileName.endsWith(".html")) {
+            switchLanguage("HTML");
+        } else if (fileName.endsWith(".css")) {
+            switchLanguage("CSS");
+        } else {
+            switchLanguage("None"); // Standard: Keine Sprache
+        }
+    }
 
 
 
