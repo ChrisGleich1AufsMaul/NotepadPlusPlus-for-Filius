@@ -39,6 +39,11 @@ Follow these steps to integrate Notepad++ into Filius:
 3. Toggle syntax highlighting via the menu strip as needed.
 4. Save and open files seamlessly within the simulation.
 
+## Screenshots
+![image](https://github.com/user-attachments/assets/2c997a7b-a881-4d67-9ea7-c7b45622433f)
+![image](https://github.com/user-attachments/assets/51af2bba-af43-485e-a41b-ab3133fe035f)
+
+
 ## Contributing
 
 Contributions are welcome! Please follow these steps to contribute:
