@@ -4,9 +4,11 @@ A better editor for Filius named "Notepad++". This project extends the functiona
 
 ## Features
 
-- Syntax highlighting for Java keywords and modifiers.
+- Syntax highlighting for Java, HTML and CSS keywords/modifiers.
+- Automatic file extention detection
 - File open and save functionality with a simple and intuitive interface.
-- Toggleable syntax highlighting for flexibility.
+- Toggleable syntax highlighting.
+- toggleable word wrap
 - Seamless integration with the Filius simulation software.
 
 ## Disclaimer
