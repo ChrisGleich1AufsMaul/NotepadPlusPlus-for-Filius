@@ -45,3 +45,14 @@ Contributions are welcome! Please follow these steps to contribute:
 2. Create a new branch:
    ```bash
    git checkout -b feature/my-new-feature
+
+3. Commit your changes:
+   ```bash
+   git commit -am 'Add new feature'
+4. Push to the branch:
+   ```bash
+   git push origin feature/my-new-feature
+5. Open a Pull Request.
+
+### License
+This project is licensed under the MIT License. See the LICENSE file for details.
